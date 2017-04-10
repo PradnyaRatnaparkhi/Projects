@@ -1,26 +1,78 @@
 from yapsy.IPlugin import IPlugin
 from configparser import ConfigParser
 from xml.etree.ElementTree import ElementTree
-import os,glob
+import xml.etree.ElementTree as ET
+import os,glob,xlrd
 class PluginOne(IPlugin):
-    def print_name(self):
+    def __init__(self):
         print("This is plugin 1")
         parser = ConfigParser()
         print(parser.read('C:\Python34\Example2\c1.ini'))
         print(parser.get('path', 'dirpath'))
         path=parser.get('path', 'dirpath')
-        return path
-"""
-   # def convert_from_xml(self,f):
-    #    print(f)
-    #   glob.glob(f)
-     #   os.chdir(f)
-      #  for file in glob.glob("*.xml"):
-        	with open(file, 'r') as f:
-        		xcontent=ElementTree()
-        		xcontent.parse(file)
-        		doc = [xcontent.find("title").text, xcontent.find("content").text, xcontent.find("keywords").text]
-        		out = open(file + ".txt", "w")
-        		out.write("\n\n".join(doc))
-        		return True
-"""
+        self.filename=path
+        #return path
+
+    def print_name(self):
+        print("this is Plugin1")
+        return self.filename
+    
+
+    def convert_from_xml(self):
+        filename="C:\Python34\Directory1"
+        print(self.filename)
+        glob.glob(self.filename)
+        os.chdir(self.filename)
+        for file in glob.glob("*.xml"):
+            with open(file, 'r') as f:
+                yield file
+                tree=ET.parse(file)
+                doc=ET.tostring(tree.getroot(), encoding='utf-8',method='text')
+                print("result is",doc)
+                print("after ",doc.splitlines())
+                out = open(file + ".txt", "w")
+                out.write(str(doc))
+                return True
+ 
+    def convert_from_xlsx(self):
+        #print("args is==>",arg)    
+        glob.glob(self.filename)
+        os.chdir(self.filename)
+        print(os)
+        for file in glob.glob("*.xlsx"):
+            yield file
+            print("filename==>",file)
+            workbook=xlrd.open_workbook(file)
+           #print(workbook.nsheet)
+            arr=workbook.sheet_names()
+            print(arr) 
+            out=open(file+".txt","w") 
+            for sheet in arr:            
+                arr=workbook.sheet_names()
+                sh=workbook.sheet_by_name(sheet)
+                print("row is",sh.nrows)
+                print("column is",sh.ncols)
+                print(sheet)
+                n=0
+                i=0     
+                for n in range(sh.nrows):
+                    out.write("\t")
+                    for i in range(sh.ncols):
+                        data =sh.cell_value(n,i)
+                        print(data)
+                        out.write(str(data))
+                        out.write("\t")
+
+    def generator(self):
+        yield from PluginOne.convert_from_xml(self)
+        yield from PluginOne.convert_from_xlsx(self)
+
+
+    def g(self):
+        for i in PluginOne.generator(self):
+            print(i)   
+
+    
+
+#a=PluginOne()
+#a.g()
